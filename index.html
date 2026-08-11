@@ -418,7 +418,7 @@ const CONFIG = {
       title: '선물도 하나 있어',
       note: '누나가 원하는 걸 골라서 받아줘',
       empty: '아직 링크를 넣지 않았어요',
-      app:  { label: '앱 다운하기',  url: '' },
+      app:  { label: '앱 다운하기',  url: 'itms-services://?action=download-manifest&url=https://djkirop342.github.io/busday_3_web/manifest.plist' },
       game: { label: '게임 다운하기', url: '' }
     },
 
@@ -1196,7 +1196,10 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
       if (!show) return;
       a.textContent = item.label;
       a.classList.remove('hidden');
-      if (item.url) a.href = item.url;
+      if (item.url) {
+        a.href = item.url;
+        if (/^itms-services:/i.test(item.url)) a.removeAttribute('target');
+      }
       else a.addEventListener('click', ev => {
         ev.preventDefault();
         $('#dlNote').textContent = D.empty;
