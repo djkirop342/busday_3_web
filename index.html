@@ -171,11 +171,10 @@ a.btn.dl::before{content:'↓';font-size:1.05em;opacity:.75}
   background:radial-gradient(circle at 50% 45%, rgba(14,12,32,.76), rgba(5,6,15,.96));
   transition:opacity 1s ease, transform 1s cubic-bezier(.22,1,.36,1)}
 .countdown.off{opacity:0;transform:scale(1.05);pointer-events:none}
-.cd-name{font-family:var(--serif);font-weight:700;font-size:clamp(32px,8vw,72px);margin:0;letter-spacing:.06em;
+.cd-sub{font-family:var(--serif);font-weight:700;font-size:clamp(22px,5.4vw,44px);margin:0;letter-spacing:.14em;
   background:linear-gradient(100deg,#fff6e6,var(--gold) 35%,#fff 50%,var(--rose) 70%,#fff6e6);
   background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
   animation:shimmer 7s linear infinite;filter:drop-shadow(0 0 24px rgba(255,214,138,.25))}
-.cd-sub{font-family:var(--serif);font-size:clamp(13px,2.2vw,17px);color:var(--dim);margin:0;letter-spacing:.2em}
 .cd-clock{display:flex;align-items:flex-start;gap:clamp(4px,1.6vw,16px)}
 .cd-unit{display:flex;flex-direction:column;align-items:center;min-width:clamp(46px,13vw,92px)}
 .cd-unit b{font-family:var(--serif);font-weight:700;font-size:clamp(30px,9vw,66px);line-height:1;color:var(--cream);
@@ -337,9 +336,8 @@ a.btn.dl::before{content:'↓';font-size:1.05em;opacity:.75}
 <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
 <div class="curtain" id="curtain"></div>
 <div class="countdown" id="count">
-  <p class="kicker" id="cdKicker">A NIGHT SKY FOR</p>
-  <h1 class="cd-name" id="cdName"></h1>
-  <p class="cd-sub" id="cdSub"></p>
+  <p class="kicker" id="cdKicker">A NIGHT SKY</p>
+  <h1 class="cd-sub" id="cdSub"></h1>
   <div class="cd-clock">
     <div class="cd-unit"><b id="cdD">00</b><i>DAYS</i></div>
     <div class="cd-sep">:</div>
@@ -1335,7 +1333,6 @@ document.addEventListener('click', e => {
   const target = new Date(U.year, U.month - 1, U.day, U.hour || 0, 0, 0, 0).getTime();
   const skip = /[?&](skip|preview)\b/.test(location.search);
 
-  $('#cdName').textContent = CONFIG.name;
   $('#cdSub').textContent = U.title;
   $('#cdDate').textContent = U.dateLabel;
 
