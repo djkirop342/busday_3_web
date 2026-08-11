@@ -17,7 +17,8 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);overflow:hidden;overscroll-behavior:none}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);overflow:hidden;overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 /* ── 배경 ── */
 .nebula{position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -361,6 +362,7 @@ a.btn.dl::before{content:'↓';font-size:1.05em;opacity:.75}
 const CONFIG = {
   name: '송민하',
   musicVolume: 0.2,   // 노래 볼륨 (0 ~ 1)
+  guard: true,        // 우클릭 · F12 · 소스보기 · 드래그 차단 (?skip 으로 열면 자동 해제)
 
   /* 이 시각이 되기 전에는 카운트다운만 보이고 사이트가 잠깁니다.
      지나고 나면 계속 열려 있어요. 미리 보려면 주소 뒤에 ?skip 을 붙이세요. */
@@ -1325,6 +1327,29 @@ document.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (b && !b.closest('#gate')) SFX.tick();
 }, true);
+
+/* ══════════════ 훔쳐보기 방지 ══════════════ */
+(function guard() {
+  if (!CONFIG.guard) return;
+  if (/[?&](skip|preview|dev)\b/.test(location.search)) return;   // 개발할 땐 해제
+
+  const stop = e => { e.preventDefault(); e.stopPropagation(); return false; };
+  ['contextmenu', 'dragstart', 'selectstart', 'copy', 'cut'].forEach(t =>
+    document.addEventListener(t, stop, { capture: true }));
+
+  const HIT = {
+    devtools: ['KeyI', 'KeyJ', 'KeyC', 'KeyK', 'KeyE'],   // Ctrl/Cmd + Shift + ...
+    plain: ['KeyU', 'KeyS', 'KeyP']                       // Ctrl/Cmd + ...  (소스보기 · 저장 · 인쇄)
+  };
+  addEventListener('keydown', e => {
+    const code = e.code || '';
+    const mod = e.ctrlKey || e.metaKey;
+    if (code === 'F12' || e.key === 'F12') return stop(e);
+    if (mod && e.shiftKey && HIT.devtools.indexOf(code) >= 0) return stop(e);
+    if (e.metaKey && e.altKey && HIT.devtools.indexOf(code) >= 0) return stop(e);  // macOS
+    if (mod && !e.shiftKey && HIT.plain.indexOf(code) >= 0) return stop(e);
+  }, { capture: true });
+})();
 
 /* ══════════════ 10월 17일 카운트다운 ══════════════ */
 (function countdown() {
