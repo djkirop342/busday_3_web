@@ -166,6 +166,27 @@ a.btn.dl::before{content:'↓';font-size:1.05em;opacity:.75}
   animation:shimmer 7s linear infinite;filter:drop-shadow(0 0 30px rgba(255,214,138,.35))}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+.countdown{position:fixed;inset:0;z-index:75;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(14px,2.6vh,24px);text-align:center;padding:24px;
+  background:radial-gradient(circle at 50% 45%, rgba(14,12,32,.76), rgba(5,6,15,.96));
+  transition:opacity 1s ease, transform 1s cubic-bezier(.22,1,.36,1)}
+.countdown.off{opacity:0;transform:scale(1.05);pointer-events:none}
+.cd-name{font-family:var(--serif);font-weight:700;font-size:clamp(32px,8vw,72px);margin:0;letter-spacing:.06em;
+  background:linear-gradient(100deg,#fff6e6,var(--gold) 35%,#fff 50%,var(--rose) 70%,#fff6e6);
+  background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shimmer 7s linear infinite;filter:drop-shadow(0 0 24px rgba(255,214,138,.25))}
+.cd-sub{font-family:var(--serif);font-size:clamp(13px,2.2vw,17px);color:var(--dim);margin:0;letter-spacing:.2em}
+.cd-clock{display:flex;align-items:flex-start;gap:clamp(4px,1.6vw,16px)}
+.cd-unit{display:flex;flex-direction:column;align-items:center;min-width:clamp(46px,13vw,92px)}
+.cd-unit b{font-family:var(--serif);font-weight:700;font-size:clamp(30px,9vw,66px);line-height:1;color:var(--cream);
+  text-shadow:0 0 30px rgba(255,214,138,.45);font-variant-numeric:tabular-nums}
+.cd-unit i{font-style:normal;font-size:clamp(8px,1.4vw,11px);letter-spacing:.28em;color:var(--dim);
+  margin-top:clamp(6px,1.2vh,12px);padding-left:.28em}
+.cd-sep{font-family:var(--serif);font-size:clamp(22px,6.5vw,48px);line-height:1.1;color:rgba(255,217,138,.4);
+  animation:cdBlink 2s ease-in-out infinite}
+@keyframes cdBlink{0%,100%{opacity:.2}50%{opacity:.85}}
+.cd-date{font-family:var(--serif);letter-spacing:.36em;font-size:clamp(10px,1.8vw,14px);color:var(--gold);margin:0;
+  padding:8px 16px 8px 22px;border:1px solid rgba(255,217,138,.3);border-radius:999px;background:rgba(255,217,138,.05)}
 .gate{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
   cursor:pointer;transition:opacity .9s ease;
   background:radial-gradient(circle at 50% 50%,rgba(12,10,28,.7),rgba(5,6,15,.93));backdrop-filter:blur(2px)}
@@ -315,6 +336,21 @@ a.btn.dl::before{content:'↓';font-size:1.05em;opacity:.75}
 <button class="skip" id="skipBtn">건너뛰기 →</button>
 <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
 <div class="curtain" id="curtain"></div>
+<div class="countdown" id="count">
+  <p class="kicker" id="cdKicker">A NIGHT SKY FOR</p>
+  <h1 class="cd-name" id="cdName"></h1>
+  <p class="cd-sub" id="cdSub"></p>
+  <div class="cd-clock">
+    <div class="cd-unit"><b id="cdD">00</b><i>DAYS</i></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><b id="cdH">00</b><i>HOURS</i></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><b id="cdM">00</b><i>MIN</i></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><b id="cdS">00</b><i>SEC</i></div>
+  </div>
+  <p class="cd-date" id="cdDate"></p>
+</div>
 <div class="gate" id="gate">
   <div class="g-ring"><span class="g-note"></span></div>
   <p>화면을 눌러 시작하기</p>
@@ -327,6 +363,15 @@ a.btn.dl::before{content:'↓';font-size:1.05em;opacity:.75}
 const CONFIG = {
   name: '송민하',
   musicVolume: 0.2,   // 노래 볼륨 (0 ~ 1)
+
+  /* 이 시각이 되기 전에는 카운트다운만 보이고 사이트가 잠깁니다.
+     지나고 나면 계속 열려 있어요. 미리 보려면 주소 뒤에 ?skip 을 붙이세요. */
+  unlock: {
+    year: 2026, month: 10, day: 17, hour: 0,
+    title: '밤하늘이 열리기까지',
+    dateLabel: '2026 . 10 . 17',
+    done: '오늘이에요'
+  },
   dateLabel: '10월 17일',
   zodiac: {
     ko: '강아지자리', en: "MINHA'S OWN CONSTELLATION",
@@ -1282,6 +1327,47 @@ document.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (b && !b.closest('#gate')) SFX.tick();
 }, true);
+
+/* ══════════════ 10월 17일 카운트다운 ══════════════ */
+(function countdown() {
+  const U = CONFIG.unlock;
+  const box = $('#count');
+  const target = new Date(U.year, U.month - 1, U.day, U.hour || 0, 0, 0, 0).getTime();
+  const skip = /[?&](skip|preview)\b/.test(location.search);
+
+  $('#cdName').textContent = CONFIG.name;
+  $('#cdSub').textContent = U.title;
+  $('#cdDate').textContent = U.dateLabel;
+
+  let gone = false;
+  function open(instant) {
+    if (gone) return;
+    gone = true;
+    if (instant) { box.style.display = 'none'; return; }
+    box.classList.add('off');
+    setTimeout(() => { box.style.display = 'none'; }, 1050);
+  }
+
+  if (skip || Date.now() >= target) { open(true); return; }
+
+  const pad = n => (n < 10 ? '0' : '') + n;
+  function tick() {
+    const diff = target - Date.now();
+    if (diff <= 0) {
+      $('#cdD').textContent = $('#cdH').textContent = $('#cdM').textContent = $('#cdS').textContent = '00';
+      $('#cdSub').textContent = U.done;
+      setTimeout(() => open(false), 1200);
+      return;
+    }
+    const sec = Math.floor(diff / 1000);
+    $('#cdD').textContent = pad(Math.floor(sec / 86400));
+    $('#cdH').textContent = pad(Math.floor(sec / 3600) % 24);
+    $('#cdM').textContent = pad(Math.floor(sec / 60) % 60);
+    $('#cdS').textContent = pad(sec % 60);
+    setTimeout(tick, 250);
+  }
+  tick();
+})();
 
 /* ══════════════ 건너뛰기 ══════════════ */
 $('#skipBtn').addEventListener('click', () => {
