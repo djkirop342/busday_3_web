@@ -466,6 +466,7 @@ const CONFIG = {
       '**생일 축하해'
     ],
     letterPace: 2400,      // 한 줄이 나타나는 간격 (ms)
+    endDelay: 500,         // 마지막 줄이 나온 뒤 편지가 닫히기까지 (ms)
 
     /* 편지가 다 나오면 편지가 접히고 아래 버튼이 나타납니다.
        ↓↓↓ 여기에 다운로드 주소를 넣어주세요 ↓↓↓ */
@@ -1157,12 +1158,15 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
     else p.textContent = raw;
     L.appendChild(p);
   });
-  const sig = document.createElement('p');
-  sig.className = 'sig'; sig.textContent = CONFIG.finale.signature;
-  L.appendChild(sig);
+  if (CONFIG.finale.signature) {
+    const sig = document.createElement('p');
+    sig.className = 'sig'; sig.textContent = CONFIG.finale.signature;
+    L.appendChild(sig);
+  }
 
   const lines = Array.from(L.querySelectorAll('p'));
   const audio = $('#bgm');
+  let letterDone = false;   // 편지를 끝까지 봤는지
   $('#fRevealAll').textContent = CONFIG.finale.revealAll;
 
   function showLine(p) {
@@ -1176,16 +1180,18 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
   }
 
   function step(i) {
-    if (i >= lines.length) {
-      $('#fRevealAll').classList.add('hidden');
-      letterTimer = setTimeout(finishLetter, 2800);
-      return;
-    }
+    const last = lines.length - 1;
+    if (i > last) { finishLetter(); return; }
     const p = lines[i];
     showLine(p);
+    if (i === last) {
+      letterDone = true;
+      $('#fRevealAll').classList.add('hidden');
+      letterTimer = setTimeout(finishLetter, CONFIG.finale.endDelay);
+      return;
+    }
     const pace = CONFIG.finale.letterPace;
-    const delay = !p.textContent.trim() ? pace * .35 : p.dataset.hi === '2' ? pace * 1.3 : pace;
-    letterTimer = setTimeout(() => step(i + 1), delay);
+    letterTimer = setTimeout(() => step(i + 1), p.textContent.trim() ? pace : pace * .35);
   }
 
   function resetLetter() {
@@ -1197,13 +1203,15 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
   function revealAll() {
     clearTimeout(letterTimer);
     lines.forEach(p => p.classList.add('on'));
+    letterDone = true;
     $('#fRevealAll').classList.add('hidden');
-    letterTimer = setTimeout(finishLetter, 3200);
+    letterTimer = setTimeout(finishLetter, 2500);
   }
 
   /* 편지를 접고 선물 버튼을 보여줍니다 */
   function finishLetter() {
     letterTimer = 0;
+    letterDone = true;
     closeLetter();
     setTimeout(() => {
       const box = $('#fDownloads');
@@ -1213,15 +1221,25 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
       FX.burst(innerWidth * .5, innerHeight * .45, 1.2);
       setTimeout(() => FX.rocket(innerWidth * .28, innerHeight * .26), 400);
       setTimeout(() => FX.rocket(innerWidth * .72, innerHeight * .3), 850);
-    }, 750);
+    }, 220);
   }
 
   function openLetter() {
-    resetLetter();
+    clearTimeout(letterTimer); letterTimer = 0;
     L.classList.remove('hidden');
     $('#fLetterBtn').textContent = CONFIG.finale.letterClose;
-    $('#fRevealAll').classList.remove('hidden');
     SFX.paper();
+
+    // 이미 끝까지 본 편지라면 처음부터 다시 흐르지 않고 전체를 보여줍니다
+    if (letterDone) {
+      lines.forEach(p => { p.classList.remove('flash'); p.classList.add('on'); });
+      L.scrollTop = 0;
+      $('#fRevealAll').classList.add('hidden');
+      return;
+    }
+
+    resetLetter();
+    $('#fRevealAll').classList.remove('hidden');
     FX.burst(innerWidth / 2, innerHeight * .34, .9);
     audio.volume = CONFIG.musicVolume;
     if (audio.paused) audio.play().catch(() => {});
@@ -1283,6 +1301,7 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
     finaleReady = false;
     clearInterval(finaleTimer);
     $('#fDownloads').classList.add('hidden');
+    letterDone = false;
     closeLetter();
     go('intro');
   });
