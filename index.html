@@ -1309,16 +1309,38 @@ let finaleTimer = 0, finaleReady = false, letterTimer = 0, subTimer = 0;
 })();
 
 function startFinale() {
-  window.__boost = 1.4;
+  window.__boost = 1.6;
   finaleReady = true;
-  const w = innerWidth, h = innerHeight;
-  FX.rocket(w * .3, h * .3); FX.rocket(w * .7, h * .34);
-  setTimeout(() => FX.rocket(w * .5, h * .2), 700);
+  const W = innerWidth, H = innerHeight;
+
+  // 사방에서 파파팡 — 화면 곳곳을 돌아가며 연달아 터뜨립니다
+  const spots = [
+    [.50, .30], [.14, .22], [.86, .24], [.30, .44], [.70, .46],
+    [.06, .50], [.94, .52], [.40, .14], [.60, .16], [.20, .62],
+    [.80, .64], [.50, .12], [.12, .36], [.88, .38], [.34, .56],
+    [.66, .58], [.24, .28], [.76, .30]
+  ];
+  spots.forEach((pt, i) => {
+    setTimeout(() => {
+      if (currentScene !== 'finale') return;
+      FX.burst(W * pt[0], H * pt[1], rand(.85, 1.4));
+    }, i * 130 + rand(0, 80));
+  });
+
+  // 아래에서 쏘아 올리는 것도 몇 발 섞어줍니다
+  [0, 400, 820, 1300, 1800, 2300].forEach(d => setTimeout(() => {
+    if (currentScene !== 'finale') return;
+    FX.rocket(rand(W * .15, W * .85), rand(H * .12, H * .4));
+  }, d));
+
+  // 그 뒤로는 잔잔하게 계속
   clearInterval(finaleTimer);
   finaleTimer = setInterval(() => {
     if (currentScene !== 'finale') return;
     FX.rocket(rand(innerWidth * .15, innerWidth * .85), rand(innerHeight * .16, innerHeight * .45));
-  }, 1900);
+    if (Math.random() < .55)
+      FX.burst(rand(innerWidth * .1, innerWidth * .9), rand(innerHeight * .12, innerHeight * .45), rand(.7, 1.15));
+  }, 1500);
 }
 
 addEventListener('pointerdown', e => {
