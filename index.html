@@ -158,7 +158,7 @@ body{margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);ov
   transition:opacity .95s ease,transform .95s cubic-bezier(.22,1,.36,1),filter .95s ease,color .6s ease,text-shadow .6s ease}
 .letter p.on{opacity:1;transform:none;filter:none}
 .letter p.hi{color:#a2661f;font-weight:700;letter-spacing:.03em}
-.letter p.big{font-size:1.32em;line-height:1.9;color:#7a4a12;font-weight:700;text-align:center;margin-top:.5em}
+.letter p.big{transition-duration:.6s;font-size:1.32em;line-height:1.9;color:#7a4a12;font-weight:700;text-align:center;margin-top:.5em}
 .letter p.flash{color:#c07d1c;text-shadow:0 0 18px rgba(255,182,66,.65)}
 .letter .sig{margin-top:24px;text-align:right;color:#8a6a3c;font-size:.92em}
 .letter::-webkit-scrollbar{width:5px}
@@ -466,7 +466,8 @@ const CONFIG = {
       '**생일 축하해'
     ],
     letterPace: 2400,      // 한 줄이 나타나는 간격 (ms)
-    endDelay: 500,         // 마지막 줄이 나온 뒤 편지가 닫히기까지 (ms)
+    endDelay: 2400,        // 마지막 줄이 다 나타난 뒤 편지가 닫히기까지 (ms)
+                           // 글자가 떠오르는 데 0.6초가 걸리니, 실제로 읽는 시간은 약 1.8초입니다
 
     /* 편지가 다 나오면 편지가 접히고 아래 버튼이 나타납니다.
        ↓↓↓ 여기에 다운로드 주소를 넣어주세요 ↓↓↓ */
