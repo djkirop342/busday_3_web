@@ -434,7 +434,7 @@ const CONFIG = {
       note: '누나가 원하는 걸 골라서 받아줘',
       empty: '아직 링크를 넣지 않았어요',
       app:  { label: '앱 다운하기',  url: 'itms-services://?action=download-manifest&url=https://djkirop342.github.io/busday_3_web/manifest.plist' },
-      game: { label: '게임 다운하기', url: '' }
+      game: { label: '게임 다운하기', url: 'https://drive.google.com/file/d/1rpKy_CFduP72RkQUFxBeZQCxAs8FWMfU/view?usp=drive_link' }
     },
 
     signature: '',
@@ -1341,7 +1341,7 @@ document.addEventListener('click', e => {
 /* ══════════════ 훔쳐보기 방지 ══════════════ */
 (function guard() {
   if (!CONFIG.guard) return;
-  if (/[?&](skip|preview|dev)\b/.test(location.search)) return;   // 개발할 땐 해제
+  if (/[?&](skip|preview|dev|letter)\b/.test(location.search)) return;   // 개발할 땐 해제
 
   const stop = e => { e.preventDefault(); e.stopPropagation(); return false; };
   ['contextmenu', 'dragstart', 'selectstart', 'copy', 'cut'].forEach(t =>
@@ -1360,6 +1360,16 @@ document.addEventListener('click', e => {
     if (mod && !e.shiftKey && HIT.plain.indexOf(code) >= 0) return stop(e);
   }, { capture: true });
 })();
+
+/* ══════════════ 확인용: ?letter 로 열면 바로 편지까지 ══════════════ */
+if (/[?&]letter\b/.test(location.search)) {
+  $('#gate').addEventListener('click', () => {
+    setTimeout(() => {
+      go('finale');
+      setTimeout(() => $('#fLetterBtn').click(), 1000);
+    }, 250);
+  }, { once: true });
+}
 
 /* ══════════════ 건너뛰기 ══════════════ */
 $('#skipBtn').addEventListener('click', () => {
